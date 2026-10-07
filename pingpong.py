@@ -8,6 +8,7 @@ PADDLE_SPEED = 7
 MARGIN = 20
 BALL_SIZE = 14
 BALL_SPEED = 6
+WIN_SCORE = 7
 
 
 class Game:
@@ -26,6 +27,13 @@ class Game:
         self.right = self.canvas.create_rectangle(
             WIDTH - MARGIN - PADDLE_W, top, WIDTH - MARGIN, top + PADDLE_H, fill="white")
 
+        self.score = [0, 0]
+        self.over = False
+        self.score_text = self.canvas.create_text(
+            WIDTH // 2, 40, text="0   0", fill="white", font=("Courier", 32, "bold"))
+        self.message = self.canvas.create_text(
+            WIDTH // 2, HEIGHT // 2, text="", fill="yellow", font=("Courier", 24, "bold"))
+
         self.ball = self.canvas.create_oval(0, 0, BALL_SIZE, BALL_SIZE, fill="white")
         self.reset_ball()
 
@@ -41,13 +49,37 @@ class Game:
 
     def move_ball(self):
         self.canvas.move(self.ball, self.vx, self.vy)
-        _, y1, _, y2 = self.canvas.coords(self.ball)
+        x1, y1, x2, y2 = self.canvas.coords(self.ball)
         if y1 <= 0:
             self.vy = abs(self.vy)
         elif y2 >= HEIGHT:
             self.vy = -abs(self.vy)
+        if x2 < 0:
+            self.point(1)
+            return
+        if x1 > WIDTH:
+            self.point(0)
+            return
         self.bounce_off(self.left, going_left=True)
         self.bounce_off(self.right, going_left=False)
+
+    def point(self, player):
+        self.score[player] += 1
+        self.canvas.itemconfig(self.score_text, text=f"{self.score[0]}   {self.score[1]}")
+        if self.score[player] >= WIN_SCORE:
+            self.over = True
+            side = "ESQUERDO" if player == 0 else "DIREITO"
+            self.canvas.itemconfig(
+                self.message, text=f"Jogador {side} venceu!\nPressione R para reiniciar")
+        else:
+            self.reset_ball()
+
+    def restart(self):
+        self.score = [0, 0]
+        self.over = False
+        self.canvas.itemconfig(self.score_text, text="0   0")
+        self.canvas.itemconfig(self.message, text="")
+        self.reset_ball()
 
     def bounce_off(self, paddle, going_left):
         """Rebate a bola na raquete; o ângulo depende de onde ela bate."""

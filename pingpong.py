@@ -1,3 +1,4 @@
+import random
 import tkinter as tk
 
 WIDTH, HEIGHT = 800, 500
@@ -5,6 +6,8 @@ FPS = 60
 PADDLE_W, PADDLE_H = 12, 90
 PADDLE_SPEED = 7
 MARGIN = 20
+BALL_SIZE = 14
+BALL_SPEED = 6
 
 
 class Game:
@@ -23,9 +26,24 @@ class Game:
         self.right = self.canvas.create_rectangle(
             WIDTH - MARGIN - PADDLE_W, top, WIDTH - MARGIN, top + PADDLE_H, fill="white")
 
+        self.ball = self.canvas.create_oval(0, 0, BALL_SIZE, BALL_SIZE, fill="white")
+        self.reset_ball()
+
         self.keys = set()
         root.bind("<KeyPress>", lambda e: self.keys.add(e.keysym.lower()))
         root.bind("<KeyRelease>", lambda e: self.keys.discard(e.keysym.lower()))
+
+    def reset_ball(self):
+        cx, cy = (WIDTH - BALL_SIZE) // 2, (HEIGHT - BALL_SIZE) // 2
+        self.canvas.coords(self.ball, cx, cy, cx + BALL_SIZE, cy + BALL_SIZE)
+        self.vx = random.choice((-1, 1)) * BALL_SPEED
+        self.vy = random.choice((-1, 1)) * random.randint(2, 4)
+
+    def move_ball(self):
+        self.canvas.move(self.ball, self.vx, self.vy)
+        _, y1, _, y2 = self.canvas.coords(self.ball)
+        if y1 <= 0 or y2 >= HEIGHT:
+            self.vy = -self.vy
 
     def move_paddle(self, paddle, dy):
         _, y1, _, y2 = self.canvas.coords(paddle)

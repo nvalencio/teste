@@ -9,6 +9,7 @@ MARGIN = 20
 BALL_SIZE = 14
 BALL_SPEED = 6
 WIN_SCORE = 7
+MAX_BALL_SPEED = 16
 
 
 class Game:
@@ -89,7 +90,8 @@ class Game:
         px1, py1, px2, py2 = self.canvas.coords(paddle)
         if bx2 >= px1 and bx1 <= px2 and by2 >= py1 and by1 <= py2:
             offset = ((by1 + by2) / 2 - (py1 + py2) / 2) / (PADDLE_H / 2)
-            self.vx = -self.vx * 1.05  # acelera a cada rebatida
+            speed = min(abs(self.vx) * 1.05, MAX_BALL_SPEED)  # acelera a cada rebatida
+            self.vx = speed if going_left else -speed
             self.vy = offset * BALL_SPEED
 
     def move_paddle(self, paddle, dy):
@@ -100,6 +102,11 @@ class Game:
     def update(self):
         self.move_paddle(self.left, PADDLE_SPEED * (("s" in self.keys) - ("w" in self.keys)))
         self.move_paddle(self.right, PADDLE_SPEED * (("down" in self.keys) - ("up" in self.keys)))
+        if self.over:
+            if "r" in self.keys:
+                self.restart()
+            return
+        self.move_ball()
 
     def loop(self):
         self.update()

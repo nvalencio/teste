@@ -42,8 +42,23 @@ class Game:
     def move_ball(self):
         self.canvas.move(self.ball, self.vx, self.vy)
         _, y1, _, y2 = self.canvas.coords(self.ball)
-        if y1 <= 0 or y2 >= HEIGHT:
-            self.vy = -self.vy
+        if y1 <= 0:
+            self.vy = abs(self.vy)
+        elif y2 >= HEIGHT:
+            self.vy = -abs(self.vy)
+        self.bounce_off(self.left, going_left=True)
+        self.bounce_off(self.right, going_left=False)
+
+    def bounce_off(self, paddle, going_left):
+        """Rebate a bola na raquete; o ângulo depende de onde ela bate."""
+        if (self.vx < 0) != going_left:
+            return
+        bx1, by1, bx2, by2 = self.canvas.coords(self.ball)
+        px1, py1, px2, py2 = self.canvas.coords(paddle)
+        if bx2 >= px1 and bx1 <= px2 and by2 >= py1 and by1 <= py2:
+            offset = ((by1 + by2) / 2 - (py1 + py2) / 2) / (PADDLE_H / 2)
+            self.vx = -self.vx * 1.05  # acelera a cada rebatida
+            self.vy = offset * BALL_SPEED
 
     def move_paddle(self, paddle, dy):
         _, y1, _, y2 = self.canvas.coords(paddle)
